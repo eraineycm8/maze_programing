@@ -90,8 +90,37 @@ class Player {
     this.energy-=2;
     this.setValues();
     drawPlayer();
+
+
     //-------------------------------------------------------------------------------
   }  
+
+   walkto(column,row) {
+    let numPassos = 0;
+    
+    switch (this.direction) {
+      case 'w':
+        numPassos = this.getColumn()-column;
+        break;
+      case 's':
+        numPassos = row - this.getRow();
+          break;
+      case 'e':
+        numPassos = column-this.getColumn();
+        break;
+      case 'n':
+        numPassos = this.getRow()-row;
+        break;
+    }
+    for (let i = 0; i < numPassos; i++) {
+      player.walk();
+    }
+  }
+  
+  getPos(){
+    return [this.getColumn(), this.getRow()];
+  }
+  
 
   getInfo() {
     return `Name: ${this.name}, Health: ${this.health}`;
@@ -104,8 +133,8 @@ const commands = [];
 //Defining the conttants
 const CELL_SIZE = 35;
 const MARGIN = 20;
-const N_COLUMNS = 21;
-const N_ROWS = 13;
+const N_COLUMNS = 5;
+const N_ROWS = 1;
 
 // Defining the dimensions of the canvas
 const WIDTH = N_COLUMNS*CELL_SIZE +MARGIN;
@@ -339,28 +368,9 @@ function walk() {
 }
 
 function walkto() {
-  let numPassos;
-  let column = walkY.value.charCodeAt(0) - 65;
+  let column = walkY.value.toUpperCase().charCodeAt(0) - 65;
   let row = walkX.value-1;
-  switch (player.direction) {
-    case 'w':
-      numPassos = player.getColumn()-column;
-      break;
-    case 's':
-      numPassos = row - player.getRow();
-        break;
-    case 'e':
-      numPassos = column-player.getColumn();
-      break;
-    case 'n':
-      numPassos = player.getRow()-row;
-      break;
-  }
-
-  for (let i = 0; i < numPassos; i++) {
-    commands.push(player.walk.bind(player));    
-  }
-  textCommand.value = textCommand.value + 'Andar até: '+ player.getRow()+' '+player.getColumn() + '\n' + row + ' : ' + column + ' > '+ numPassos + '\n';
+  addCommand(() => player.walkto(column, row), 'Ande até [' + walkY.value + '][' + walkX.value + ']');
 }
 
 function addCommand(method, command){
@@ -383,6 +393,18 @@ function run() {
 // Event listener for keydown events
 document.addEventListener('keydown', handleKeyDown);
 
+function itwon() {
+  fx = finishArea[0] / CELL_SIZE;
+  fy = finishArea[1] / CELL_SIZE;
+
+  
+  console.log(player.getPos() + " -- " + fx+","+fy);
+  if (fx == player.getColumn() && fy == player.getRow()){
+    return true;    
+  }
+  return false;
+}
+
 // Game loop
 function gameLoop() {
   drawMaze(maze);
@@ -394,17 +416,15 @@ function definePortals(){
   index = Math.floor(Math.random() * portals.length);
   startArea = portals[index];
   finishArea = portals[(index+2)%4];
-
 }
 
 function gameInitialize() {
-  console.log(player.getInfo());
   player.setValues();
   definePortals();
 
   player.x = startArea[0];
   player.y = startArea[1];
-  
+  console.log(player.getColumn() + " * " + player.getRow())  ;
 
   gameLoop();
 }

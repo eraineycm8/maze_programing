@@ -48,7 +48,9 @@
                     <div class="col">
                         <button class="btn btn-secondary btn-sm m-1" onclick="turnAroundLeft()">VIRAR ESQUERDA</button>
                         <button class="btn btn-secondary btn-sm m-1" onclick="walk()">ANDAR</button>
-                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#walkto">ANDAR ATÉ</button>
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#walkToModal">
+                          Andar até
+                        </button>
                         <button class="btn btn-secondary btn-sm m-1" onclick="turnAroundRight()">VIRAR DIREITA</button>
                         <button class="btn btn-primary btn-sm m-1">SE</button>
                         <button class="btn btn-primary btn-sm m-1">ATÉ</button>
@@ -63,42 +65,34 @@
         </div>
     </div>
 
-  <!-- Botão para abrir o modal -->
-  <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal">
-    Abrir Modal
-  </button>
-
-  <!-- O modal -->
-<!-- Button trigger modal -->
-<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
-    Launch demo modal
-  </button>
-  
-  <!-- Modal -->
-  <div class="modal fade" id="walkto" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content bg-dark">
-        <div class="modal-header">
-          <h1 class="modal-title fs-5" id="exampleModalLabel">Andar até</h1>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+ 
+<!-- Modal Walk To -->
+<!-- Modal -->
+<div class="modal fade" id="walkToModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="walkToModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content bg-dark">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="walkToModalLabel">Andar até</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="walkY">Letra:</label>
+          <input type="text" class="form-control" id="walkY" placeholder="Digite a letra aqui" maxlength="1">
         </div>
-        <div class="modal-body">
-            <div class="form-group">
-                <label for="walkY">Letra:</label>
-                <input type="text" class="form-control" id="walkY" placeholder="Digite a letra aqui">
-            </div>
-            <div class="form-group">
-                <label for="walkX">Número:</label>
-                <input type="text" class="form-control" id="walkX" placeholder="Digite o número aqui">
-            </div>
-
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-primary" onclick="walkto()">Inserir</button>
+        <div class="form-group">
+          <label for="walkX">Número:</label>
+          <input type="text" class="form-control" id="walkX" placeholder="Digite o número aqui"maxlength="2">
         </div>
       </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary"  data-bs-dismiss="modal" onclick="walkto()">Inserir código</button>
+      </div>
     </div>
-  </div> 
+  </div>
+</div>
+
   
 
     <script src="maze.js">
