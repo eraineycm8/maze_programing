@@ -39,6 +39,31 @@
   </div>
 </div>
 
+
+<!-- Button trigger modal -->
+<button type="button" class="btn btn-primary" onclick=" sucesso()">
+  Ganhou
+</button>
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content bg-success text-light">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="exampleModalLabel">Parabéns!</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        Você chegou ao final do labirinto!
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" hidden>Close</button>
+        <a href="http://google.com"><button type="button" class="btn btn-success">Ok</button></a>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 function walkto() {
   let column = walkY.value.toUpperCase().charCodeAt(0) - 65;
@@ -46,6 +71,12 @@ function walkto() {
 
   console.log(column+ " - "+row);
   //addCommand(() => player.walkto(column, row), 'Ande até [' + walkY.value + '][' + walkX.value + ']');
+}
+
+function sucesso() {
+  const myModal = new bootstrap.Modal('#exampleModal', null);
+  myModal.show();
+  
 }
 
 </script>
