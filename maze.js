@@ -1,6 +1,6 @@
 // Player class 
 class Player {
-  constructor(name, energy = 100, health = 100, items = [], life = 3, x = 0, y = 0) {
+  constructor(name, energy = 100, health = 100, items = [], life = 1, x = 0, y = 0) {
     this.name = name;
     this.energy = energy;
     this.health = health;
@@ -97,28 +97,22 @@ class Player {
     }
     this.energy-=2;
     this.setValues();
-    drawPlayer();
 
-
+    if (this.isAlive()){
+      drawPlayer();
+    }
     //-------------------------------------------------------------------------------
   }  
 
  async walkto(column,row) {
-  while (this.isAlive() && (!(column == this.getColumn() && row == this.getRow()))) {
-
-
-    await runCommandWithDelay(player.walk.bind(player));
-     
+    while (this.isAlive() && (!(column == this.getColumn() && row == this.getRow()))) {
+      await runCommandWithDelay(player.walk.bind(player));
+    }
   }
-
-  }
-
-
   
   getPos(){
     return [this.getColumn(), this.getRow()];
   }
-  
 
   getInfo() {
     return `Name: ${this.name}, Health: ${this.health}`;
@@ -360,10 +354,11 @@ function drawArrow(x, y, direction) {
 // Function to check if the movement is valid
 function isValidMove(x, y) {
   retorno = true;
-  
+  if(x<0 || y<0 || x>=N_COLUMNS || y>=N_ROWS){
+    return false;
+  }
   // Check if it's a wall
   if (maze[y][x] === 1) {
-    retorno = false;
     return false;
   }
 
@@ -417,10 +412,12 @@ function itwon() {
 
 function fail() {
 
-  if (player.life>0){
+  if (player.life>=0){
     player.setValues();
+    textCommand.value = "Você morreu, mas ainda tem vidas \n Tente novamente\n";
   }else{
-
+    okToIndex.removeAttribute('hidden');  
+    okToContinue.hidden = true;  
   }
   const failModal = new bootstrap.Modal('#fail', null);
   failModal.show();
