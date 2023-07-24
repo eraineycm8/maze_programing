@@ -8,10 +8,16 @@ class Player {
     this.life = life;
     this.x = x;
     this.y = y;
-    this.xInitial = x;
-    this.yInitial = y;
     this.direction = 'n';
   }
+
+  setStartLocation(x,y){
+    this.x = x;
+    this.y = y;
+    this.xInitial = x;
+    this.yInitial = y;
+  }
+
   setValues(){
     document.getElementById("energy").value = this.energy;
     document.getElementById("health").value = this.health;
@@ -97,10 +103,33 @@ class Player {
     //-------------------------------------------------------------------------------
   }  
 
-   walkto(column,row) {
-    setTimeout(function() {
+ async walkto(column,row) {
+/*    setTimeout(function() {
       this.walkWithDelay(column, row);
-    }, interval+=500);
+    }, interval+=500);*/
+
+/*
+    commands.forEach((command, index) => {
+      const delay = (interval + 1) * 500; // Atraso de 500ms multiplicado pelo índice
+      interval++;
+      setTimeout(function () {
+        runCommandWithDelay(command, 500);
+      }, delay);
+    });*/
+    interval= interval+17;
+  while (this.isAlive() && (!(column == this.getColumn() && row == this.getRow()))) {
+
+    const delay = (interval + 1) * 500; // Atraso de 500ms multiplicado pelo índice
+    //interval++;
+    setTimeout(function () {
+
+      runCommandWithDelay(player.walk.bind(player), 1);
+    }, 0);
+    
+    await sleep(28); // Aguarda 500ms antes de prosseguir para a próxima iteração
+    
+  }
+
   }
 
 
@@ -137,11 +166,8 @@ class Player {
 
 async function walkWithDelay(column, row) {
   while (player.isAlive() && (!(column == player.getColumn() && row == player.getRow()))) {
-    //interval = (interval + 500); // Intervalo de meio segundo multiplicado pelo índice
       player.walk();
-      console.log(interval);
-      await sleep(interval+=500); // Aguarda 500ms antes de prosseguir para a próxima iteração
-      console.log(interval);
+      //await sleep(500); // Aguarda 500ms antes de prosseguir para a próxima iteração
   }
 }
 
@@ -200,8 +226,6 @@ var startArea = null;
 var finishArea = null;
 var interval = null;
 var multiple = 1;
-
-
 
 // Function to generate the maze
 function generateMaze() {
@@ -290,8 +314,6 @@ function drawMaze(maze) {
   ctx.fillRect(finishArea[0]+MARGIN, finishArea[1]+MARGIN, CELL_SIZE, CELL_SIZE);
 }
 
-
-
 // Function to draw the player on the canvas
 function drawPlayer() {
   ctx.fillStyle = PLAYER;
@@ -302,7 +324,6 @@ function drawPlayer() {
   // Desenha a seta com base na direção atual do jogador
   drawArrow(player.x + 17+MARGIN, player.y + 17+MARGIN, player.direction);
 }
-
 
 function drawArrow(x, y, direction) {
   line = 20;
@@ -359,23 +380,6 @@ function isValidMove(x, y) {
   return true;
 }
 
-
-
-// Function to handle keydown events
-function handleKeyDown(event) {
-  const { key } = event;
-
-  if (key === 'ArrowLeft') {
-    player.turnAroundLeft();
-  } else if (key === 'ArrowRight') {
-    player.turnAroundRight();
-  } else if (key=== ' '){
-    player.walk();
-  }
-
-}
-
-
 // block for command html
 function turnAroundLeft(){
   addCommand(player.turnAroundLeft.bind(player), 'Vire a esquerda');
@@ -410,22 +414,47 @@ function xfactor(value) {
   multiple=value;  
   textCommand.value = textCommand.value + value + 'x ';
 }
+/*
+async function runCommand(method) {
+  console.log(method);
+  await sleep(500); // Aguarda 500ms antes de prosseguir para a próxima iteração
+  method();
+}
 
 function run() {
   interval=0;
+  interval = (interval + 500); // Intervalo de meio segundo multiplicado pelo índice
+  //------------
+  console.log(commands.length);
+  setTimeout(function() {
+    commands.forEach((command, index) => {
+      console.log(index);
+      runCommand(command);
+    });
+    commands.splice(0, commands.length);
+  }, 500);
+
+}*/
+
+async function runCommandWithDelay(method, delay) {
+  await sleep(delay);
+  method();
+}
+
+function run() {
+  interval = 0;
+
   commands.forEach((command, index) => {
-    interval = (interval + 500); // Intervalo de meio segundo multiplicado pelo índice
-    setTimeout(function() {
-      command();
-    }, interval);
+    const delay = (interval + 1) * 500; // Atraso de 500ms multiplicado pelo índice
+    interval++;
+    setTimeout(function () {
+      runCommandWithDelay(command, 500);
+    }, delay);
   });
 
   commands.splice(0, commands.length);
 }
 
- 
-// Event listener for keydown events
-document.addEventListener('keydown', handleKeyDown);
 
 function itwon() {
   fx = finishArea[0] / CELL_SIZE;
@@ -448,10 +477,6 @@ function fail() {
   failModal.show();
 }
 
-function resetMaze() {
-  
-}
-
 // Game loop
 function gameLoop() {
   drawMaze(maze);
@@ -469,10 +494,7 @@ function definePortals(){
 function gameInitialize() {
   player.setValues();
   definePortals();
-
-  player.x = startArea[0];
-  player.y = startArea[1];
-  console.log(player.getColumn() + " * " + player.getRow())  ;
+  player.setStartLocation(startArea[0], startArea[1]);
 
   gameLoop();
 }
