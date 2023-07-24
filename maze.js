@@ -104,30 +104,11 @@ class Player {
   }  
 
  async walkto(column,row) {
-/*    setTimeout(function() {
-      this.walkWithDelay(column, row);
-    }, interval+=500);*/
-
-/*
-    commands.forEach((command, index) => {
-      const delay = (interval + 1) * 500; // Atraso de 500ms multiplicado pelo índice
-      interval++;
-      setTimeout(function () {
-        runCommandWithDelay(command, 500);
-      }, delay);
-    });*/
-    interval= interval+17;
   while (this.isAlive() && (!(column == this.getColumn() && row == this.getRow()))) {
 
-    const delay = (interval + 1) * 500; // Atraso de 500ms multiplicado pelo índice
-    //interval++;
-    setTimeout(function () {
 
-      runCommandWithDelay(player.walk.bind(player), 1);
-    }, 0);
-    
-    await sleep(28); // Aguarda 500ms antes de prosseguir para a próxima iteração
-    
+    await runCommandWithDelay(player.walk.bind(player));
+     
   }
 
   }
@@ -164,11 +145,19 @@ class Player {
 
 }
 
-async function walkWithDelay(column, row) {
-  while (player.isAlive() && (!(column == player.getColumn() && row == player.getRow()))) {
-      player.walk();
-      //await sleep(500); // Aguarda 500ms antes de prosseguir para a próxima iteração
+async function runCommandWithDelay(method) {
+  await sleep(DELAY);
+  await method();
+}
+
+async function run() {
+
+  for (let i = 0; i < commands.length; i++) {
+    const command = commands[i];
+    await runCommandWithDelay(command);
   }
+
+  commands.splice(0, commands.length);
 }
 
 function sleep(ms) {
@@ -183,6 +172,7 @@ const CELL_SIZE = 35;
 const MARGIN = 20;
 const N_COLUMNS = 17;
 const N_ROWS = 7;
+const DELAY = 500;
 
 // Defining the dimensions of the canvas
 const WIDTH = N_COLUMNS*CELL_SIZE +MARGIN;
@@ -414,47 +404,6 @@ function xfactor(value) {
   multiple=value;  
   textCommand.value = textCommand.value + value + 'x ';
 }
-/*
-async function runCommand(method) {
-  console.log(method);
-  await sleep(500); // Aguarda 500ms antes de prosseguir para a próxima iteração
-  method();
-}
-
-function run() {
-  interval=0;
-  interval = (interval + 500); // Intervalo de meio segundo multiplicado pelo índice
-  //------------
-  console.log(commands.length);
-  setTimeout(function() {
-    commands.forEach((command, index) => {
-      console.log(index);
-      runCommand(command);
-    });
-    commands.splice(0, commands.length);
-  }, 500);
-
-}*/
-
-async function runCommandWithDelay(method, delay) {
-  await sleep(delay);
-  method();
-}
-
-function run() {
-  interval = 0;
-
-  commands.forEach((command, index) => {
-    const delay = (interval + 1) * 500; // Atraso de 500ms multiplicado pelo índice
-    interval++;
-    setTimeout(function () {
-      runCommandWithDelay(command, 500);
-    }, delay);
-  });
-
-  commands.splice(0, commands.length);
-}
-
 
 function itwon() {
   fx = finishArea[0] / CELL_SIZE;
