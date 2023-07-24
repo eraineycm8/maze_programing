@@ -8,6 +8,8 @@ class Player {
     this.life = life;
     this.x = x;
     this.y = y;
+    this.xInitial = x;
+    this.yInitial = y;
     this.direction = 'n';
   }
   setValues(){
@@ -96,26 +98,12 @@ class Player {
   }  
 
    walkto(column,row) {
-    let numPassos = 0;
-    
-    switch (this.direction) {
-      case 'w':
-        numPassos = this.getColumn()-column;
-        break;
-      case 's':
-        numPassos = row - this.getRow();
-          break;
-      case 'e':
-        numPassos = column-this.getColumn();
-        break;
-      case 'n':
-        numPassos = this.getRow()-row;
-        break;
-    }
-    for (let i = 0; i < numPassos; i++) {
-      player.walk();
-    }
+    setTimeout(function() {
+      this.walkWithDelay(column, row);
+    }, interval+=500);
   }
+
+
   
   getPos(){
     return [this.getColumn(), this.getRow()];
@@ -125,6 +113,40 @@ class Player {
   getInfo() {
     return `Name: ${this.name}, Health: ${this.health}`;
   }
+
+  isAlive(){
+    if (this.energy>0 && this.health>0 && this.life>-1){
+      return true;
+    }else{
+      this.itDied();
+      fail();
+    }
+    return false;
+  }
+
+  itDied(){
+    this.life--;
+    this.energy = 100;
+    this.health = 100;
+    this.x = this.xInitial;
+    this.y = this.yInitial;
+  }
+
+
+}
+
+async function walkWithDelay(column, row) {
+  while (player.isAlive() && (!(column == player.getColumn() && row == player.getRow()))) {
+    //interval = (interval + 500); // Intervalo de meio segundo multiplicado pelo índice
+      player.walk();
+      console.log(interval);
+      await sleep(interval+=500); // Aguarda 500ms antes de prosseguir para a próxima iteração
+      console.log(interval);
+  }
+}
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 const player = new Player('TesteRobto');
@@ -133,8 +155,8 @@ const commands = [];
 //Defining the conttants
 const CELL_SIZE = 35;
 const MARGIN = 20;
-const N_COLUMNS = 5;
-const N_ROWS = 1;
+const N_COLUMNS = 17;
+const N_ROWS = 7;
 
 // Defining the dimensions of the canvas
 const WIDTH = N_COLUMNS*CELL_SIZE +MARGIN;
@@ -176,6 +198,9 @@ const portals = [
 // Function to generate the starting position of the player
 var startArea = null; 
 var finishArea = null;
+var interval = null;
+var multiple = 1;
+
 
 
 // Function to generate the maze
@@ -374,13 +399,22 @@ function walkto() {
 }
 
 function addCommand(method, command){
-  commands.push(method);
+  for (let index = 0; index < multiple; index++) {
+    commands.push(method);
+  }
+  multiple=1;
   textCommand.value = textCommand.value + command + '\n';
 }
 
+function xfactor(value) {
+  multiple=value;  
+  textCommand.value = textCommand.value + value + 'x ';
+}
+
 function run() {
+  interval=0;
   commands.forEach((command, index) => {
-    let interval = (index + 1) * 500; // Intervalo de meio segundo multiplicado pelo índice
+    interval = (interval + 500); // Intervalo de meio segundo multiplicado pelo índice
     setTimeout(function() {
       command();
     }, interval);
@@ -397,12 +431,25 @@ function itwon() {
   fx = finishArea[0] / CELL_SIZE;
   fy = finishArea[1] / CELL_SIZE;
 
-  
-  console.log(player.getPos() + " -- " + fx+","+fy);
   if (fx == player.getColumn() && fy == player.getRow()){
-    return true;    
+    const successModal = new bootstrap.Modal('#success', null);
+    successModal.show();    
   }
-  return false;
+}
+
+function fail() {
+
+  if (player.life>0){
+    player.setValues();
+  }else{
+
+  }
+  const failModal = new bootstrap.Modal('#fail', null);
+  failModal.show();
+}
+
+function resetMaze() {
+  
 }
 
 // Game loop
@@ -410,6 +457,7 @@ function gameLoop() {
   drawMaze(maze);
   drawPlayer(player.x, player.y);
   requestAnimationFrame(gameLoop);
+  itwon();
 }
 
 function definePortals(){
