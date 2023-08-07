@@ -146,6 +146,8 @@ async function runCommandWithDelay(method) {
 
 async function run() {
 
+  if (commands.length>0)  player.energy-=5;
+
   for (let i = 0; i < commands.length; i++) {
     const command = commands[i];
     await runCommandWithDelay(command);
@@ -176,7 +178,7 @@ const HEIGHT = N_ROWS*CELL_SIZE+MARGIN;
 const C_MARGIN = '#333333';
 const WAY = '#f57b42';
 const WALL = '#000000';
-const GREEN = '#00FF00';
+const GREEN = '#7FFF00';
 const PLAYER = '#0000FF';
 const GRID_LINE = '#ccc';
 
@@ -249,9 +251,88 @@ function generateMaze() {
   }
   return maze;
 }
-
-
 function drawMaze(maze) {
+  // Carregar a imagem de textura de tijolo
+  const brickTexture = new Image();
+  brickTexture.src = 'wall.png';
+
+  const roadTexture = new Image();
+  roadTexture.src = 'road.png';  
+
+  const finishTexture = new Image();
+  finishTexture.src = 'finish.png';    
+
+  // Quando a imagem estiver carregada, desenhar a textura de tijolo
+  brickTexture.onload = function() {
+    roadTexture.onload = function () {
+      finishTexture.onload = function () {
+        
+        ctx.fillStyle = C_MARGIN;
+        ctx.fillRect(0, 0, WIDTH, HEIGHT);
+    
+        // Draw the letters (columns) at the top
+        ctx.fillStyle = 'white';
+        ctx.font = '14px Arial';
+        for (let x = 0; x < CELL_WIDTH; x++) {
+          const letter = String.fromCharCode(65 + x); // 'A', 'B', 'C', ...
+          ctx.fillText(letter, x * CELL_SIZE + CELL_SIZE / 2 - 5 + MARGIN, CELL_SIZE / 2 - 2);
+        }
+    
+        // Draw the numbers (rows) on the left side
+        for (let y = 0; y < CELL_HEIGHT; y++) {
+          const number = y + 1;
+          ctx.fillText(number, 5, y * CELL_SIZE + CELL_SIZE / 2 + 5 + MARGIN);
+        }
+    
+        for (let y = 0; y < CELL_HEIGHT; y++) {
+          for (let x = 0; x < CELL_WIDTH; x++) {
+            if (maze[y][x] === 1) {
+              const pattern = ctx.createPattern(brickTexture, 'repeat'); // WALL
+              ctx.fillStyle = pattern;
+              ctx.fillRect(MARGIN + x * CELL_SIZE, MARGIN + y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+            } else {
+              const pattern2 = ctx.createPattern(roadTexture, 'repeat'); // WAY
+              ctx.fillStyle = pattern2;
+
+              //ctx.fillStyle = WAY;
+              ctx.fillRect(MARGIN + x * CELL_SIZE, MARGIN + y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+    
+              ctx.strokeStyle = GRID_LINE; // Color for grid lines
+              ctx.lineWidth = 1;
+              ctx.strokeRect(MARGIN + x * CELL_SIZE, MARGIN + y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+            }
+          }
+        }
+    
+        // Drawing the green areas in the corners
+        const centerX = finishArea[0] + MARGIN + CELL_SIZE / 2;
+        const centerY = finishArea[1] + MARGIN + CELL_SIZE / 2;
+        
+        ctx.fillStyle = GREEN;
+        ctx.fillRect(finishArea[0] + MARGIN, finishArea[1] + MARGIN, CELL_SIZE, CELL_SIZE);
+        
+        ctx.fillStyle = PLAYER; // Cor do texto
+        ctx.font = 'bold 24px Arial'; // Defina a fonte e o tamanho do texto
+        ctx.textAlign = 'center'; // Centralizar o texto horizontalmente
+        ctx.textBaseline = 'middle'; // Centralizar o texto verticalmente
+        ctx.fillText('H', centerX, centerY); // Desenhe a letra "H" no centro        
+/*
+        ctx.fillStyle = GREEN;
+        ctx.fillRect(finishArea[0] + MARGIN, finishArea[1] + MARGIN, CELL_SIZE, CELL_SIZE);*/
+
+      };
+
+    };
+  };
+}
+
+
+function drawMazeOriginal(maze) {
+
+  //
+  const brickTexture = new Image();
+  brickTexture.src = 'wall.png';
+  //
   ctx.fillStyle = C_MARGIN;
   ctx.fillRect(0, 0, WIDTH, HEIGHT);
 
@@ -280,8 +361,17 @@ function drawMaze(maze) {
   for (let y = 0; y < CELL_HEIGHT; y++) {
     for (let x = 0; x < CELL_WIDTH; x++) {
       if (maze[y][x] === 1) {
+        /* ANTES DE COLOCAR FILTRO
         ctx.fillStyle = WALL;
         ctx.fillRect(MARGIN + x * CELL_SIZE, MARGIN +  y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+        */
+        // Quando a imagem estiver carregada, desenhar a textura de tijolo
+        brickTexture.onload = function() {
+          const pattern = ctx.createPattern(brickTexture, 'repeat');
+          ctx.fillStyle = pattern;
+          ctx.fillRect(MARGIN + x * CELL_SIZE, MARGIN + y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+        };
+
       } else {
         ctx.fillStyle = WAY;
         ctx.fillRect(MARGIN + x * CELL_SIZE, MARGIN +  y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
@@ -302,6 +392,7 @@ function drawMaze(maze) {
 function drawPlayer() {
   ctx.fillStyle = PLAYER;
   ctx.beginPath();
+  //ctx.arc(player.x + 17+MARGIN, player.y + 17+MARGIN, 9, 0, 2 * Math.PI);
   ctx.arc(player.x + 17+MARGIN, player.y + 17+MARGIN, 9, 0, 2 * Math.PI);
   ctx.fill();
 
