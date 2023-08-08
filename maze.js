@@ -122,7 +122,7 @@ class Player {
     if (this.energy>0 && this.health>0 && this.life>-1){
       return true;
     }else{
-      this.itDied();
+      //this.itDied();
       fail();
     }
     return false;
@@ -148,9 +148,13 @@ async function run() {
 
   if (commands.length>0)  player.energy-=5;
 
-  for (let i = 0; i < commands.length; i++) {
+  for (let i = 0; i < commands.length  && player.isAlive(); i++) {
     const command = commands[i];
     await runCommandWithDelay(command);
+  }
+
+  if (!player.isAlive()){
+    //player.itDied(); 
   }
 
   commands.splice(0, commands.length);
@@ -306,7 +310,6 @@ function drawMaze(maze) {
     
         // Drawing the green areas in the corners
 
-        console.log(finishArea);
         const centerX = finishArea[0] + MARGIN + CELL_SIZE / 2;
         const centerY = finishArea[1] + MARGIN + CELL_SIZE / 2;
         
@@ -498,12 +501,13 @@ function itwon() {
   fy = finishArea[1] / CELL_SIZE;
 
   if (fx == player.getColumn() && fy == player.getRow()){
-    const successModal = new bootstrap.Modal('#success', null);
-    successModal.show();    
+    $('#success').modal('show');
   }
 }
 
 function fail() {
+
+  commands.splice(0, commands.length);
 
   if (player.life>=0){
     player.setValues();
@@ -512,8 +516,13 @@ function fail() {
     okToIndex.removeAttribute('hidden');  
     okToContinue.hidden = true;  
   }
-  const failModal = new bootstrap.Modal('#fail', null);
-  failModal.show();
+  $('#failModal').modal('show');
+}
+
+function failOk() {
+  $('#failModal').modal('hide');
+  player.itDied();
+  player.setValues();
 }
 // --------------------------------------------------
 
@@ -584,7 +593,6 @@ function loadGameFromCSV(csv) {
   drawPlayer();
   drawMaze(maze);
 
-  console.log('Estado do jogo e labirinto carregados:', loadedGameState);
 }
 
 // Função para carregar o jogo quando a página for carregada
