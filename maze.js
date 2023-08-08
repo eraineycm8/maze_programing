@@ -199,7 +199,7 @@ canvas.classList.add('canvas');
 const ctx = canvas.getContext('2d');
 
 // Generate the maze and initialize player coordinates
-const maze = generateMaze();
+let maze = null;
 const portals = [
   [0, 0],
   [(N_COLUMNS - 1) * CELL_SIZE, 0],
@@ -305,6 +305,8 @@ function drawMaze(maze) {
         }
     
         // Drawing the green areas in the corners
+
+        console.log(finishArea);
         const centerX = finishArea[0] + MARGIN + CELL_SIZE / 2;
         const centerY = finishArea[1] + MARGIN + CELL_SIZE / 2;
         
@@ -513,7 +515,93 @@ function fail() {
   const failModal = new bootstrap.Modal('#fail', null);
   failModal.show();
 }
+// --------------------------------------------------
 
+// Função para converter o estado do jogador em CSV
+function convertPlayerToCSV(player) {
+  return `${player.name},${player.energy},${player.health},${player.items.join(';')},${player.life},${player.x},${player.y},${player.direction}`;
+}
+
+// Função para converter um CSV em um objeto de jogador
+function convertCSVToPlayer(csv) {
+  const [name, energy, health, items, life, x, y, direction] = csv.split(',');
+  return new Player(name, parseInt(energy), parseInt(health), items.split(';'), parseInt(life), parseInt(x), parseInt(y), direction);
+}
+
+// Função para converter o estado do jogo em CSV
+function convertGameStateToCSV(player, maze, finishArea) {
+  const playerCSV = convertPlayerToCSV(player);
+  const mazeCSV = maze.map(row => row.join(',')).join(';');
+  const finishAreaCSV = `${finishArea[0]},${finishArea[1]}`; // Convertendo a área verde para CSV
+  return `${playerCSV}\n${mazeCSV}\n${finishAreaCSV}`; // Incluindo a área verde no CSV
+}
+
+function saveGame() {
+  const gameStateCSV = convertGameStateToCSV(player, maze, finishArea);
+  alert(finishArea);
+  // Cria um objeto Blob para o conteúdo CSV
+  const blob = new Blob([gameStateCSV], { type: 'text/csv' });
+
+  // Cria um link de download
+  const downloadLink = document.createElement('a');
+  downloadLink.href = URL.createObjectURL(blob);
+  downloadLink.download = 'game_state.csv';
+
+  // Simula um clique no link de download
+  downloadLink.click();
+
+  // Libera recursos do Blob
+  URL.revokeObjectURL(downloadLink.href);
+}
+
+// -------------------------------------------------
+// Função para converter um CSV em estado do jogo
+function convertCSVToGameState(csv) {
+  const [playerCSV, mazeCSV, finishAreaCSV] = csv.split('\n'); // Incluindo a área verde no CSV
+  const loadedPlayer = convertCSVToPlayer(playerCSV);
+  const loadedMaze = mazeCSV.split(';').map(row => row.split(',').map(cell => parseInt(cell)));
+  const finishArea = finishAreaCSV.split(',').map(coord => parseInt(coord)); // Convertendo a área verde de volta para array
+  return { player: loadedPlayer, maze: loadedMaze, finishArea }; // Incluindo a área verde nos dados do jogo
+}
+
+function loadGameFromCSV(csv) {
+  const loadedGameState = convertCSVToGameState(csv);
+
+  player.name = loadedGameState.player.name;
+  player.energy = loadedGameState.player.energy;
+  player.health = loadedGameState.player.health;
+  player.items = loadedGameState.player.items;
+  player.life = loadedGameState.player.life;
+  player.x = loadedGameState.player.x;
+  player.y = loadedGameState.player.y;
+  player.direction = loadedGameState.player.direction;
+
+  maze = loadedGameState.maze;
+
+  finishArea = [loadedGameState.finishArea[0] , loadedGameState.finishArea[1]]; // Convertendo a área verde de volta para o formato do canvas
+
+  player.setValues();
+  drawPlayer();
+  drawMaze(maze);
+
+  console.log('Estado do jogo e labirinto carregados:', loadedGameState);
+}
+
+// Função para carregar o jogo quando a página for carregada
+window.onload = function() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const csv = urlParams.get('csv');
+  
+  if (csv) {
+    loadGameFromCSV(decodeURIComponent(csv));
+  }else{
+    gameInitialize();
+  }
+  // Start the game loop
+  gameLoop();    
+};
+
+// -------------------------------------------------
 // Game loop
 function gameLoop() {
   drawMaze(maze);
@@ -522,19 +610,15 @@ function gameLoop() {
   itwon();
 }
 
-function definePortals(){
+function createPortals(){
   index = Math.floor(Math.random() * portals.length);
   startArea = portals[index];
   finishArea = portals[(index+2)%4];
 }
 
 function gameInitialize() {
+  maze = generateMaze();
   player.setValues();
-  definePortals();
+  createPortals();
   player.setStartLocation(startArea[0], startArea[1]);
-
-  gameLoop();
 }
-
-// Start the game loop
-gameInitialize();

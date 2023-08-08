@@ -1,138 +1,134 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Bootstrap demo</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
-  </head>
-  <body>
-    <h1>Bem vindo ao A Maze Programing</h1>
-
-    <br>
-    <h1>Imagem SVG</h1>
-    <svg width="40" height="40">
-      <foreignObject width="100%" height="100%">
-        <img src="wall.svg" alt="Imagem SVG"/>
-      </foreignObject>
-    </svg>
-    
-    <br>
-
-    <a href="./maze.html">
-      <button type="button" class="btn btn-outline-success">
-      Iniciar jogo
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bootstrap demo</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+</head>
+<body class="bg-dark">
+  <div class="container text-center mt-5">
+    <h1 class="text-light">A Maze Programming</h1>
+    <button class="btn btn-primary mt-3" onclick="openNewGame()">Novo Jogo</button>
+    <button type="button" class="btn btn-primary mt-3" data-toggle="modal" data-target="#loadGameModal">
+      Carregar Jogo
     </button>
-  </a>
+    <button class="btn btn-primary mt-3" data-toggle="modal" data-target="#tutorialModal">
+      Tutorial
+    </button>
+  </div>
 
-<!-- Button trigger modal -->
-<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#walkToModal">
-  Launch static backdrop modal
-</button>
 
-<!-- Modal -->
-<div class="modal fade" id="walkToModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="walkToModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h1 class="modal-title fs-5" id="walkToModalLabel">Modal title</h1>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <div class="form-group">
-          <label for="walkY">Letra:</label>
-          <input type="text" class="form-control" id="walkY" placeholder="Digite a letra aqui" maxlength="1">
+  <div class="modal fade" id="loadGameModal" tabindex="-1" aria-labelledby="loadGameModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+        <h5 class="modal-title" id="loadGameModalLabel">Carregar Jogo</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
         </div>
-        <div class="form-group">
-          <label for="walkX">Número:</label>
-          <input type="text" class="form-control" id="walkX" placeholder="Digite o número aqui"maxlength="2">
+        <div class="modal-body">
+          <form>
+            <div class="mb-3">
+              <label for="gameFile" class="form-label">Selecione um arquivo CSV para carregar o jogo:</label>
+              <input type="file" class="form-control" id="gameFile">
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary" onclick="loadGame()">Carregar Jogo</button>
         </div>
       </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary"  data-bs-dismiss="modal" onclick="walkto()">Understood</button>
+    </div>
+  </div>
+
+  <div class="modal fade" id="tutorialModal" tabindex="-1" aria-labelledby="tutorialModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="tutorialModalLabel">Tutorial</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>          
+        </div>
+        <div class="modal-body">
+          <p>Bem-vindo ao A Maze Programming!</p>
+          <p>Neste jogo, você assumirá o controle de um drone explorador que precisa encontrar seu caminho através de um labirinto cheio de desafios. Seu objetivo é guiar o drone da posição inicial até o heliporto (a área marcada em verde com um H no canto oposto) do labirinto.</p>
+          
+          <p><strong>Controles:</strong></p>
+          <ul>
+            <li>VIRAR ESQUERDA: Gira o drone em 45° no sentido anti-horário.</li>
+            <li>VIRAR DIREITA: Gira o drone em 45° no sentido horário.</li>
+            <li>ANDAR: Movimenta o drone para a casa à frente dele.</li>
+            <li>ANDAR ATÉ: Movimenta o drone em linha reta até a casa informada.</li>
+            <li>2x{}: Repete a ação 2 vezes.</li>
+            <li>3x{}: Repete a ação 3 vezes.</li>
+            <li>4x{}: Repete a ação 4 vezes.</li>
+          </ul>
+          
+          <p><strong>Comandos:</strong></p>
+          <p>Você pode pré-programar uma série de comandos para o drone seguir pressionando os botões "Vire a Esquerda", "Vire a Direita", "Ande" e "Ande até [coluna][linha]". Esses comandos serão executados em sequência quando você pressionar o botão "Executar". Você só precisa informar a posição em que o drone irá ficar no controle ANDAR ATÉ. Virar o drone não consome energia. Executar consome energia toda vez que for acionado.</p>
+          
+          <p><strong>Cuidado:</strong></p>
+          <p>Cada movimento e ação consomem energia e talvez saúde do drone. Certifique-se de monitorar seus níveis de energia e saúde para garantir que você não fique sem recursos para chegar até o heliporto. Cuidado com o loop-infinito! Mandar o drone passar por cima da floresta pode fazer ele não conseguir passar dela.</p>
+          
+          <p><strong>Vitória e Derrota:</strong></p>
+          <p>Se você conseguir levar o drone até a área verde marcada como um heliporto, você venceu! No entanto, se a energia ou a saúde do drone se esgotar, você perde e pode reiniciar o jogo.</p>
+          
+          <p>Agora, é hora de testar suas habilidades de programação e lógica enquanto navega pelo labirinto e enfrenta desafios emocionantes. Boa sorte e divirta-se explorando A Maze Programming!</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-dismiss="modal">Entendi</button>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
+  <script>
+    $('#exampleModal').on('show.bs.modal', function (event) {
+      var button = $(event.relatedTarget) // Button that triggered the modal
+      var recipient = button.data('whatever') // Extract info from data-* attributes
+      // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
+      // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
+      var modal = $(this)
+      modal.find('.modal-title').text('New message to ' + recipient)
+      modal.find('.modal-body input').val(recipient)
+    })    
+    function openNewGame() {
+      window.location.href = 'maze.html';
+    }
 
+    function loadGame() {
+      const gameFileInput = document.getElementById('gameFile');
+      if (gameFileInput.files.length > 0) {
+        const selectedFile = gameFileInput.files[0];
+        
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          const gameStateCSV = event.target.result;
+          // Encode the CSV content to be passed as a URL parameter
+          const encodedCSV = encodeURIComponent(gameStateCSV);
+          window.location.href = `maze.html?csv=${encodedCSV}`;
+        };
+        
+        reader.readAsText(selectedFile);
+      }
+  }      
+    /*
+      const gameFileInput = document.getElementById('gameFile');
+      if (gameFileInput.files.length > 0) {
+        const selectedFile = gameFileInput.files[0];
+        const fileName = encodeURIComponent(selectedFile.name);
+        window.location.href = `maze.html?file=${fileName}`;
+      }
+    }*/
+  </script>
 
-<!-- Button trigger modal -->
-<button type="button" class="btn btn-primary" onclick=" success()">
-  Ganhou
-</button>
+  <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>  
 
-<!-- Modal Success -->
-<div class="modal fade" id="success" tabindex="-1" aria-labelledby="successLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content bg-success text-light">
-      <div class="modal-header">
-        <h1 class="modal-title fs-5" id="successLabel">Parabéns!</h1>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        Você chegou ao final do labirinto!
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" hidden>Close</button>
-        <a href=".\index"><button type="button" class="btn btn-light text-success">Ok</button></a>
-      </div>
-    </div>
-  </div>
-</div>
-
-
-<!-- Button trigger modal -->
-<button type="button" class="btn btn-primary" onclick=" fail()">
-  Ganhou
-</button>
-
-<!-- Modal Success -->
-<div class="modal fade" id="fail" tabindex="-1" aria-labelledby="successLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content bg-danger text-light">
-      <div class="modal-header">
-        <h1 class="modal-title fs-5" id="failLabel">Tente novamente!</h1>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        Você não conseguiu chegar ao final do labirinto!
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-light text-light" data-bs-dismiss="modal" hidden>Close</button>
-        <a href=".\index.html"><button type="button" class="btn btn-light text-danger">Ok</button></a>
-      </div>
-    </div>
-  </div>
-</div>
-
-
-<script>
-function walkto() {
-  let column = walkY.value.toUpperCase().charCodeAt(0) - 65;
-  let row = walkX.value-1;
-
-  console.log(column+ " - "+row);
-  //addCommand(() => player.walkto(column, row), 'Ande até [' + walkY.value + '][' + walkX.value + ']');
-}
-
-function success() {
-  const successModal = new bootstrap.Modal('#success', null);
-  successModal.show();
-}
-
-
-function fail() {
-  const successModal = new bootstrap.Modal('#fail', null);
-  successModal.show();
-}
-</script>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous">
-
-    </script>
-
-
-  </body>
+</body>
 </html>
