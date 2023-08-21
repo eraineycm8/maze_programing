@@ -161,7 +161,7 @@
       this.x = this.xInitial;
       this.y = this.yInitial;
     }
-  
+  /*
   // Function to draw the player on the canvas
     draw(ctx) {
       ctx.fillStyle = PLAYER;
@@ -213,7 +213,40 @@
       ctx.lineWidth = 2;
       ctx.strokeStyle = '#0000FF'; // Azul
       ctx.stroke();
-    }    
+    }  */
+
+  draw(ctx) {
+    const image = new Image();
+    image.src = 'robot.png'; // Substitua 'robot.png' pelo caminho correto para sua imagem.
+
+    image.onload = () => {
+      ctx.save();
+      ctx.translate(this.x + MARGIN + 17, this.y + MARGIN + 17);
+      ctx.rotate(this.getRotationAngle()); // Use a função getRotationAngle() para obter o ângulo de rotação correto.
+
+      ctx.drawImage(image, -CELL_SIZE+1 , -CELL_SIZE , CELL_SIZE*2, CELL_SIZE*2);
+
+      ctx.restore();
+    };
+  }
+
+  // Função para obter o ângulo de rotação com base na direção
+  getRotationAngle() {
+    switch (this.direction) {
+      case 'n':
+        return 0;
+      case 's':
+        return Math.PI; // 180 graus
+      case 'e':
+        return Math.PI / 2; // 90 graus
+      case 'w':
+        return (3 * Math.PI) / 2; // 270 graus
+      default:
+        return 0;
+    }
+  }
+    
+    
   
   }
   
@@ -333,7 +366,10 @@
       setCommandColor(i,'bg-primary');
       await runCommandWithDelay(command);
       if(tempHealty==player.health)  setCommandColor(i,'bg-success');
-      else setCommandColor(i,'bg-danger');
+      else {
+        setCommandColor(i,'bg-danger');
+        tempHealty = player.health;
+      }
     }
   
     if (!player.isAlive()){
@@ -734,13 +770,33 @@
   
   // -------------------------------------------------
   // Game loop
-  function gameLoop() {
+  function gameLoopx() {
     drawMaze(maze);
     player.draw(ctx);
     //drawPlayer(player.x, player.y);
     requestAnimationFrame(gameLoop);
     itwon();
   }
+
+  const targetFPS = 30; // Defina a taxa de quadros desejada, por exemplo, 30 FPS.
+  const frameInterval = 1000 / targetFPS;
+  
+  let lastUpdateTime = 0;
+  
+  function gameLoop(timestamp) {
+    if (timestamp - lastUpdateTime >= frameInterval) {
+      drawMaze(maze);
+      player.draw(ctx);
+      itwon();
+      lastUpdateTime = timestamp;
+    }
+  
+    requestAnimationFrame(gameLoop);
+  }
+  
+
+  
+
   
   function createPortals(){
     index = Math.floor(Math.random() * portals.length);
@@ -753,6 +809,7 @@
     maze = generateMaze();
     createPortals();
     player.setStartLocation(startArea[0], startArea[1]);
+
     generatedItems = generateItems();
     player.setValues();
 
