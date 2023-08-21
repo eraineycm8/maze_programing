@@ -14,3 +14,16 @@
   height: 100%;
   
 }
+
+.ln-suc {
+  background-color: #198754; /* Cor de fundo para a terceira linha */
+  color: white; /* Cor do texto para a terceira linha, para torná-lo legível */
+}
+.ln-exe {
+  background-color: #0d6efd; /* Cor de fundo para a terceira linha */
+  color: white; /* Cor do texto para a terceira linha, para torná-lo legível */
+}
+.ln-err {
+  background-color: #dc3545; /* Cor de fundo para a terceira linha */
+  color: white; /* Cor do texto para a terceira linha, para torná-lo legível */
+}

@@ -21,7 +21,7 @@
     setValues(){
       document.getElementById("energy").value = this.energy;
       document.getElementById("health").value = this.health;
-      document.getElementById("items").value = this.items.length + "/" + 15;
+      document.getElementById("items").value = this.items.length + "/" + getNumKeys();
       document.getElementById("life").value = this.life;
     }
   
@@ -99,7 +99,8 @@
       this.setValues();
   
       if (this.isAlive()){
-        drawPlayer();
+        player.draw(ctx);
+        //drawPlayer();
       }
       //-------------------------------------------------------------------------------
     }  
@@ -111,7 +112,28 @@
     }
 
     pickUp(){
-      
+      this.energy -=3; 
+      let item = getItem(this.getColumn(),this.getRow());
+      if (item){
+        switch (item.type) {
+          case 'life':
+              this.life += 1;
+              break;
+          case 'health':
+              this.health +=50;
+              this.health = this.health > 100? 100 : this.health;
+              break;
+          case 'key':
+              this.items.push(item);
+              break;
+          case 'energy':
+            this.energy +=50;
+            this.energy = this.energy > 100? 100 : this.energy;
+            break;
+        }
+        item.consume();
+      }
+      this.setValues();
     }
     
     getPos(){
@@ -140,6 +162,58 @@
       this.y = this.yInitial;
     }
   
+  // Function to draw the player on the canvas
+    draw(ctx) {
+      ctx.fillStyle = PLAYER;
+      ctx.beginPath();
+      //ctx.arc(player.x + 17+MARGIN, player.y + 17+MARGIN, 9, 0, 2 * Math.PI);
+      ctx.arc(this.x + 17+MARGIN, this.y + 17+MARGIN, 9, 0, 2 * Math.PI);
+      ctx.fill();
+    
+      // Desenha a seta com base na direção atual do jogador
+      this.drawArrow(ctx,player.x + 17+MARGIN, player.y + 17+MARGIN, player.direction);
+    } 
+    
+    drawArrow(ctx,x, y, direction) {
+      const line = 20;
+      ctx.beginPath();
+      ctx.arc(x, y, 17, 0, Math.PI * 2);
+      ctx.moveTo(x, y);
+    
+      switch (direction) {
+        case 'n':
+          ctx.lineTo(x, y - line);
+          ctx.moveTo(x - 5, y);
+          ctx.lineTo(x, y - 5);
+          ctx.moveTo(x + 5, y);
+          ctx.lineTo(x, y - 5);
+          break;
+        case 's':
+          ctx.lineTo(x, y + line);
+          ctx.moveTo(x - 5, y);
+          ctx.lineTo(x, y + 5);
+          ctx.moveTo(x + 5, y);
+          ctx.lineTo(x, y + 5);
+          break;
+        case 'e':
+          ctx.lineTo(x + line, y);
+          ctx.moveTo(x, y - 5);
+          ctx.lineTo(x + 5, y);
+          ctx.moveTo(x, y + 5);
+          ctx.lineTo(x + 5, y);
+          break;
+        case 'w':
+          ctx.lineTo(x - line, y);
+          ctx.moveTo(x, y - 5);
+          ctx.lineTo(x - 5, y);
+          ctx.moveTo(x, y + 5);
+          ctx.lineTo(x - 5, y);
+          break;
+      }
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = '#0000FF'; // Azul
+      ctx.stroke();
+    }    
   
   }
   
@@ -154,15 +228,40 @@
     consume(){
         this.isUsed= true;
     }
+
+    getIcon(){
+      switch (this.type) {
+        case 'life':
+            return 'V';
+        case 'health':
+            return 'S';
+        case 'key':
+          return 'I';
+        case 'energy':
+          return 'E';
+      }      
+    }
+
+    getForeGround(){
+      switch (this.type) {
+        case 'life':
+            return '#198754';
+        case 'health':
+            return '#dc3545';
+        case 'key':
+          return '#6f42c1';
+        case 'energy':
+          return '#0d6efd';
+      }      
+    }    
   
     // Método para desenhar o item no labirinto
-// Método para desenhar o item no labirinto
     draw(ctx) {
       const centerX = MARGIN + this.x * CELL_SIZE + CELL_SIZE / 2;
       const centerY = MARGIN + this.y * CELL_SIZE + CELL_SIZE / 2;
-      const text = this.type[0]; // Pegue a primeira letra do tipo do item
+      const text = this.getIcon(); // Pegue a primeira letra do tipo do item
     
-      ctx.fillStyle = 'black'; // Defina a cor de fundo como preto
+      ctx.fillStyle = this.getForeGround(); // Defina a cor de fundo como preto
       ctx.fillRect(
       centerX - CELL_SIZE / 2,
       centerY - CELL_SIZE / 2,
@@ -175,21 +274,6 @@
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillStyle = 'white';
-    
-      switch (this.type) {
-        case 'life':
-            ctx.fillStyle = 'green';
-            break;
-        case 'health':
-            ctx.fillStyle = 'red';
-            break;
-        case 'key':
-            ctx.fillStyle = 'yellow';
-            break;
-        case 'energy':
-            ctx.fillStyle = 'blue';
-            break;
-        }
     
       ctx.fillText(text, centerX, centerY);
     }
@@ -206,12 +290,17 @@
   }
   
   async function run() {
-  
+    execute.disabled = true;
+    ctrlRun = true;
     if (commands.length>0)  player.energy-=5;
+    tempHealty = player.health;
   
     for (let i = 0; i < commands.length  && player.isAlive(); i++) {
       const command = commands[i];
+      setCommandColor(i,'bg-primary');
       await runCommandWithDelay(command);
+      if(tempHealty==player.health)  setCommandColor(i,'bg-success');
+      else setCommandColor(i,'bg-danger');
     }
   
     if (!player.isAlive()){
@@ -219,8 +308,22 @@
     }
   
     commands.splice(0, commands.length);
+    execute.disabled = false;
   }
   
+
+  function setCommandColor(index, status) {
+    //textCommand.innerHTML = textCommand.innerHTML.replace(/<br>/g, "");
+    const linhas = textCommand.innerHTML.split("\n");
+
+    if (linhas.length >= index+1) {
+      linhas[index] = linhas[index].replace(/class="row [^"]*"/g, 'class="row text-light '+status+'"');
+      //linhas[index] = '<div class="row '+status+'">' + linhas[index] + '</div> ';
+    }
+
+    textCommand.innerHTML = linhas.join("\n")+'\n';
+  }
+
   function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
@@ -231,9 +334,12 @@
   //Defining the conttants
   const CELL_SIZE = 35;
   const MARGIN = 20;
-  const N_COLUMNS = 17;
-  const N_ROWS = 7;
+  const N_COLUMNS = (Math.floor(Math.random() * 5) + 17) | 1;
+  const N_ROWS = (Math.floor(Math.random() * 5) + 7) | 1;
   const DELAY = 500;
+
+  var generatedItems = null;
+  var configItems = null;
   
   // Defining the dimensions of the canvas
   const WIDTH = N_COLUMNS*CELL_SIZE +MARGIN;
@@ -243,7 +349,7 @@
   const C_MARGIN = '#333333';
   const WAY = '#f57b42';
   const WALL = '#000000';
-  const GREEN = '#7FFF00';
+  const GREEN = '#6f42c1';
   const PLAYER = '#0000FF';
   const GRID_LINE = '#ccc';
   
@@ -259,6 +365,8 @@
   canvas.height = HEIGHT;
   posCanvas.appendChild(canvas);
   canvas.classList.add('canvas');
+
+  var ctrlRun = false;
   
   // Getting the 2D rendering context
   const ctx = canvas.getContext('2d');
@@ -379,11 +487,11 @@
           ctx.fillStyle = GREEN;
           ctx.fillRect(finishArea[0] + MARGIN, finishArea[1] + MARGIN, CELL_SIZE, CELL_SIZE);
           
-          ctx.fillStyle = PLAYER; // Cor do texto
-          ctx.font = 'bold 24px Arial'; // Defina a fonte e o tamanho do texto
+          ctx.fillStyle = 'white'; // Cor do texto
+          ctx.font = '18px Arial'; // Defina a fonte e o tamanho do texto
           ctx.textAlign = 'center'; // Centralizar o texto horizontalmente
           ctx.textBaseline = 'middle'; // Centralizar o texto verticalmente
-          ctx.fillText('H', centerX, centerY); // Desenhe a letra "H" no centro        
+          ctx.fillText('Fim', centerX, centerY); // Desenhe a letra "H" no centro        
   /*
           ctx.fillStyle = GREEN;
           ctx.fillRect(finishArea[0] + MARGIN, finishArea[1] + MARGIN, CELL_SIZE, CELL_SIZE);*/
@@ -394,80 +502,6 @@
     };
   }
   
-  
-  function drawMazeOriginal(maze) {
-  
-    //
-    const brickTexture = new Image();
-    brickTexture.src = 'wall.png';
-    //
-    ctx.fillStyle = C_MARGIN;
-    ctx.fillRect(0, 0, WIDTH, HEIGHT);
-  
-  
-    //ctx.fillRect(0, 0, CELL_SIZE, CELL_SIZE);
-    //ctx.fillRect(WIDTH - CELL_SIZE, 0, CELL_SIZE, CELL_SIZE);
-    //ctx.fillRect(WIDTH - CELL_SIZE, HEIGHT - CELL_SIZE, CELL_SIZE, CELL_SIZE);
-    //ctx.fillRect(0, HEIGHT - CELL_SIZE, CELL_SIZE, CELL_SIZE);
-  
-  
-    // Draw the letters (columns) at the top
-    ctx.fillStyle = 'white';
-    ctx.font = '14px Arial';
-    for (let x = 0; x < CELL_WIDTH; x++) {
-      const letter = String.fromCharCode(65 + x); // 'A', 'B', 'C', ...
-      ctx.fillText(letter, x * CELL_SIZE + CELL_SIZE / 2 - 5 +MARGIN, CELL_SIZE / 2-2);
-    }
-  
-    // Draw the numbers (rows) on the left side
-    for (let y = 0; y < CELL_HEIGHT; y++) {
-      const number = y + 1;
-      ctx.fillText(number, 5, y * CELL_SIZE + CELL_SIZE / 2 + 5+MARGIN);
-    }
-  
-    
-    for (let y = 0; y < CELL_HEIGHT; y++) {
-      for (let x = 0; x < CELL_WIDTH; x++) {
-        if (maze[y][x] === 1) {
-          /* ANTES DE COLOCAR FILTRO
-          ctx.fillStyle = WALL;
-          ctx.fillRect(MARGIN + x * CELL_SIZE, MARGIN +  y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
-          */
-          // Quando a imagem estiver carregada, desenhar a textura de tijolo
-          brickTexture.onload = function() {
-            const pattern = ctx.createPattern(brickTexture, 'repeat');
-            ctx.fillStyle = pattern;
-            ctx.fillRect(MARGIN + x * CELL_SIZE, MARGIN + y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
-          };
-  
-        } else {
-          ctx.fillStyle = WAY;
-          ctx.fillRect(MARGIN + x * CELL_SIZE, MARGIN +  y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
-  
-          ctx.strokeStyle = GRID_LINE; // Color for grid lines
-          ctx.lineWidth = 1;
-          ctx.strokeRect(MARGIN +  x * CELL_SIZE, MARGIN +  y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
-        }
-      }
-    }
-  
-    // Drawing the green areas in the corners
-    ctx.fillStyle = GREEN;
-    ctx.fillRect(finishArea[0]+MARGIN, finishArea[1]+MARGIN, CELL_SIZE, CELL_SIZE);
-  }
-  
-  // Function to draw the player on the canvas
-  function drawPlayer() {
-    ctx.fillStyle = PLAYER;
-    ctx.beginPath();
-    //ctx.arc(player.x + 17+MARGIN, player.y + 17+MARGIN, 9, 0, 2 * Math.PI);
-    ctx.arc(player.x + 17+MARGIN, player.y + 17+MARGIN, 9, 0, 2 * Math.PI);
-    ctx.fill();
-  
-    // Desenha a seta com base na direção atual do jogador
-    drawArrow(player.x + 17+MARGIN, player.y + 17+MARGIN, player.direction);
-  }
-
   // Método para desenhar todos os itens não usados no labirinto
   function drawItems(ctx, items) {
     for (const item of items) {
@@ -475,48 +509,6 @@
         item.draw(ctx);
       }
     }
-  }
-  
-  
-  function drawArrow(x, y, direction) {
-    line = 20;
-    ctx.beginPath();
-    ctx.arc(x, y, 17, 0, Math.PI * 2);
-    ctx.moveTo(x, y);
-  
-    switch (direction) {
-      case 'n':
-        ctx.lineTo(x, y - line);
-        ctx.moveTo(x - 5, y);
-        ctx.lineTo(x, y - 5);
-        ctx.moveTo(x + 5, y);
-        ctx.lineTo(x, y - 5);
-        break;
-      case 's':
-        ctx.lineTo(x, y + line);
-        ctx.moveTo(x - 5, y);
-        ctx.lineTo(x, y + 5);
-        ctx.moveTo(x + 5, y);
-        ctx.lineTo(x, y + 5);
-        break;
-      case 'e':
-        ctx.lineTo(x + line, y);
-        ctx.moveTo(x, y - 5);
-        ctx.lineTo(x + 5, y);
-        ctx.moveTo(x, y + 5);
-        ctx.lineTo(x + 5, y);
-        break;
-      case 'w':
-        ctx.lineTo(x - line, y);
-        ctx.moveTo(x, y - 5);
-        ctx.lineTo(x - 5, y);
-        ctx.moveTo(x, y + 5);
-        ctx.lineTo(x - 5, y);
-        break;
-    }
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = '#0000FF'; // Azul
-    ctx.stroke();
   }
   
   
@@ -546,7 +538,7 @@
   }
 
   function pickUp(){
-
+    addCommand(player.pickUp.bind(player), 'Pegue');  
   }
   
   function walk() {
@@ -565,19 +557,39 @@
       commands.push(method);
     }
     multiple=1;
-    textCommand.value = textCommand.value + command + '\n';
+
+    if(ctrlRun){
+      ctrlRun=false;
+      textCommand.innerHTML = '';
+    }
+    
+    textCommand.innerHTML = textCommand.innerHTML +'<div class="row bg-white"><div class="col-12">'+ command+'</div></div>\n';
+  }
+
+  function removeCommand() {
+    const text = textCommand.innerHTML;
+  
+    if (text.endsWith('\n')) {
+      textCommand.innerHTML = text.slice(0, -1); // Remove o último caractere (a quebra de linha)
+    }
+
+    const linhas = textCommand.innerHTML.split('\n');
+    linhas.pop();
+    textCommand.innerHTML = linhas.join('\n');  
+
+    commands.pop();
   }
   
   function xfactor(value) {
     multiple=value;  
-    textCommand.value = textCommand.value + value + 'x ';
+    textCommand.innerHTML = textCommand.innerHTML + value + 'x ';
   }
   
   function itwon() {
     fx = finishArea[0] / CELL_SIZE;
     fy = finishArea[1] / CELL_SIZE;
   
-    if (fx == player.getColumn() && fy == player.getRow()){
+    if (fx == player.getColumn() && fy == player.getRow() && player.items.length == getNumKeys()){
       $('#success').modal('show');
     }
   }
@@ -588,7 +600,7 @@
   
     if (player.life>=0){
       player.setValues();
-      textCommand.value = "Você morreu, mas ainda tem vidas \n Tente novamente\n";
+      textCommand.innerHTML = "Você morreu, mas ainda tem vidas \n<br> Tente novamente\n<br>";
     }else{
       okToIndex.removeAttribute('hidden');  
       okToContinue.hidden = true;  
@@ -667,8 +679,9 @@
     finishArea = [loadedGameState.finishArea[0] , loadedGameState.finishArea[1]]; // Convertendo a área verde de volta para o formato do canvas
   
     player.setValues();
-    drawPlayer();
+    player.draw(ctx);
     drawMaze(maze);
+    //drawPlayer();
   
   }
   
@@ -690,7 +703,8 @@
   // Game loop
   function gameLoop() {
     drawMaze(maze);
-    drawPlayer(player.x, player.y);
+    player.draw(ctx);
+    //drawPlayer(player.x, player.y);
     requestAnimationFrame(gameLoop);
     itwon();
   }
@@ -702,12 +716,13 @@
   }
   
   function gameInitialize() {
+    configItems = getConfig();
     maze = generateMaze();
-    player.setValues();
     createPortals();
     player.setStartLocation(startArea[0], startArea[1]);
     generatedItems = generateItems();
-    console.log(generatedItems);
+    player.setValues();
+
     //itemPositions = markRandomItemPositions(maze);
   }
   
@@ -716,8 +731,21 @@
   //-----------------------------------------------------------------------
   //-----------------------------------------------------------------------
 
-  var generatedItems = null;
-  var configItems = { 'energy': 2, 'health': 2, 'life': 1, 'key': 1 };
+  
+
+  function getConfig(){
+    let key = (Math.floor(Math.random() * 3) + 1);  
+    let health = (Math.floor(Math.random() * 3) + 2);
+    let life = (Math.floor(Math.random() * 3) + 1); 
+    let energy = (Math.floor(Math.random() * 3) + 3 + key);
+
+    return { 
+      'energy': energy, 
+      'health': health, 
+      'life': life, 
+      'key': key,  
+    };
+  }
 
 
   function getRandomEmptyPosition() {
@@ -755,8 +783,26 @@ function generateItem(itemType) {
   let pos = getRandomEmptyPosition();
 
   const newItem = new Item(itemType, pos.x, pos.y);
-  console.log(newItem.toString());
-  
-
   return newItem;
+}
+
+function getItem(x, y) {
+  for (const item of generatedItems) {
+    if (!item.isUsed && item.x === x && item.y === y) {
+      return item;
+    }
+  }
+  return null; 
+}
+
+function getNumKeys(){
+  let count = 0;
+
+  for (const item of generatedItems) {
+    if (item.type === 'key') {
+      count++;
+    }
+  }
+
+  return count; 
 }
