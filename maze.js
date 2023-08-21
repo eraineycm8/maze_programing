@@ -403,8 +403,8 @@
   //Defining the conttants
   const CELL_SIZE = 35;
   const MARGIN = 20;
-  const N_COLUMNS = (Math.floor(Math.random() * 5) + 17) | 1;
-  const N_ROWS = (Math.floor(Math.random() * 5) + 7) | 1;
+  const N_COLUMNS = (Math.floor(Math.random() * 5) + 13) | 1;
+  const N_ROWS = (Math.floor(Math.random() * 5) + 5) | 1;
   const DELAY = 500;
 
   var generatedItems = null;
@@ -622,20 +622,31 @@
   }
   
   function addCommand(method, command){
+    let msgMultiple = '';
     for (let index = 0; index < multiple; index++) {
       commands.push(method);
     }
-    multiple=1;
 
     if(ctrlRun){
       ctrlRun=false;
       textCommand.innerHTML = '';
     }
-    
-    textCommand.innerHTML = textCommand.innerHTML +'<div class="row bg-white"><div class="col-12">'+ command+'</div></div>\n';
+    if (multiple>1) {
+      removeTextArea();
+      msgMultiple =` ${multiple} vezes`;
+    }
+    textCommand.innerHTML = textCommand.innerHTML +'<div class="row bg-white"><div class="col-12">'+ command+ msgMultiple+'</div></div>\n';
+    multiple=1;
+
   }
 
   function removeCommand() {
+    removeTextArea();
+
+    commands.pop();
+  }
+
+  function removeTextArea(){
     const text = textCommand.innerHTML;
   
     if (text.endsWith('\n')) {
@@ -646,12 +657,11 @@
     linhas.pop();
     textCommand.innerHTML = linhas.join('\n');  
 
-    commands.pop();
   }
   
   function xfactor(value) {
     multiple=value;  
-    textCommand.innerHTML = textCommand.innerHTML + value + 'x ';
+    textCommand.innerHTML = textCommand.innerHTML + value + 'x \n';
   }
   
   function itwon() {
@@ -813,16 +823,8 @@
     generatedItems = generateItems();
     player.setValues();
 
-    //itemPositions = markRandomItemPositions(maze);
   }
   
-  //-----------------------------------------------------------------------
-  //-----------------------------------------------------------------------
-  //-----------------------------------------------------------------------
-  //-----------------------------------------------------------------------
-
-  
-
   function getConfig(){
     let key = (Math.floor(Math.random() * 3) + 1);  
     let health = (Math.floor(Math.random() * 3) + 2);
