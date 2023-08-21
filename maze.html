@@ -12,21 +12,49 @@
     <div class="d-flex">
         <div class="col-8">
             <div class="form-row status d-flex justify-content-evenly m-2">
-                <div class="col-sm-1">
+                <div class="col-2">
                     <label for="energy" class="form-label">Energia</label>
-                    <input type="text" id="energy" class="form-control form-control-sm text-light" value="100" style="background-color: #0d6efd;">
+                    <div class="input-group">
+                      <div class="input-group-prepend">
+                        <span class="input-group-text">
+                          <img src="energy.png" alt="Ícone" width="20" height="20">
+                        </span>
+                      </div>
+                      <input type="text" id="energy" class="form-control form-control-sm text-light bg-primary" >
+                    </div>                      
                 </div>
-                <div class="col-sm-1">
-                    <label for="health" class="form-label">Saúde </label>
-                    <input type="text" id="health" class="form-control form-control-sm text-light" value="97" style="background-color: #dc3545;">
+                <div class="col-2">
+                  <label for="health" class="form-label">Saúde </label>
+                  <div class="input-group">
+                    <div class="input-group-prepend">
+                      <span class="input-group-text">
+                        <img src="health.png" alt="Ícone" width="20" height="20">
+                      </span>
+                    </div>
+                    <input type="text" id="health" class="form-control form-control-sm text-light bg-success" >
+                  </div>                      
                 </div>
-                <div class="col-sm-1">
-                    <label for="items" class="form-label">Itens</label>
-                    <input type="text" id="items" class="form-control form-control-sm text-light" value="15/18" style="background-color: #6f42c1;">
+                <div class="col-2">
+                  <label for="life" class="form-label">Vidas</label>
+                  <div class="input-group">
+                    <div class="input-group-prepend">
+                      <span class="input-group-text">
+                        <img src="life.png" alt="Ícone" width="20" height="20">
+                      </span>
+                    </div>
+                    <input type="text" id="life" class="form-control form-control-sm text-light bg-danger" >
+                  </div>                      
                 </div>
-                <div class="col-sm-1">
-                    <label for="life" class="form-label">Vidas</label>
-                    <input type="text" id="life" class="form-control form-control-sm text-light" value="3" style="background-color: #198754;">
+                <div class="col-2">
+                  <label for="items" class="form-label">Itens</label>
+                  <div class="input-group">
+                    <div class="input-group-prepend">
+                      <span class="input-group-text">
+                        <img src="key.png" alt="Ícone" width="20" height="20">
+                      </span>
+                    </div>
+                    <input type="text" id="items" class="form-control form-control-sm text-light bg-warning" >
+                  </div>                      
                 </div>
             </div>
             <div class="d-flex align-items-center justify-content-center m-2 text-light" id="mazeCanvas"></div>

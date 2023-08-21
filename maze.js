@@ -242,6 +242,7 @@
       }      
     }
 
+    /*
     getForeGround(){
       switch (this.type) {
         case 'life':
@@ -276,7 +277,39 @@
       ctx.fillStyle = 'white';
     
       ctx.fillText(text, centerX, centerY);
+    }*/
+
+    getImagePath() {
+      switch (this.type) {
+        case 'life':
+          return 'life.png';
+        case 'health':
+          return 'health.png';
+        case 'key':
+          return 'key.png';
+        case 'energy':
+          return 'energy.png';
+        default:
+          return '';
+      }
     }
+  
+    // Método para desenhar o item no labirinto
+    draw(ctx) {
+
+      const m = 8;
+      const centerX = MARGIN + this.x * CELL_SIZE + CELL_SIZE / 2;
+      const centerY = MARGIN + this.y * CELL_SIZE + CELL_SIZE / 2;
+      const imgPath = this.getImagePath(); // Obtenha o caminho da imagem
+  
+      if (imgPath) {
+        const img = new Image();
+        img.src = imgPath;
+        img.onload = () => {
+          ctx.drawImage(img, centerX - CELL_SIZE / 2 +(m/2), centerY - CELL_SIZE / 2 + (m/2), CELL_SIZE - m, CELL_SIZE - m);
+        };
+      }
+    }    
   
 
     toString(){
