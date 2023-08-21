@@ -420,7 +420,7 @@
   const WALL = '#000000';
   const GREEN = '#6f42c1';
   const PLAYER = '#0000FF';
-  const GRID_LINE = '#ccc';
+  const GRID_LINE = '#333333';
   
   // Defining the size of maze cells
   const CELL_WIDTH = Math.floor(WIDTH / CELL_SIZE);
@@ -556,15 +556,12 @@
           ctx.fillStyle = GREEN;
           ctx.fillRect(finishArea[0] + MARGIN, finishArea[1] + MARGIN, CELL_SIZE, CELL_SIZE);
           
-          ctx.fillStyle = 'white'; // Cor do texto
-          ctx.font = '18px Arial'; // Defina a fonte e o tamanho do texto
-          ctx.textAlign = 'center'; // Centralizar o texto horizontalmente
-          ctx.textBaseline = 'middle'; // Centralizar o texto verticalmente
-          ctx.fillText('Fim', centerX, centerY); // Desenhe a letra "H" no centro        
-  /*
-          ctx.fillStyle = GREEN;
-          ctx.fillRect(finishArea[0] + MARGIN, finishArea[1] + MARGIN, CELL_SIZE, CELL_SIZE);*/
-  
+          ctx.fillStyle = 'white'; 
+          ctx.font = '18px Arial'; 
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle'; 
+          ctx.fillText('Fim', centerX, centerY);      
+
         };
   
       };
