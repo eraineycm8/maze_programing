@@ -362,11 +362,13 @@
     ctrlRun = true;
     if (commands.length>0)  player.energy-=5;
     tempHealty = player.health;
-  
-    for (let i = 0; i < commands.length  && player.isAlive(); i++) {
-      const command = commands[i];
+    var k = 0;
+    for (let i = 0; i < commands.length  && player.isAlive(); i++) {    
       setCommandColor(i,'bg-primary');
-      await runCommandWithDelay(command);
+      for(let j = 0; j < numCommands[i]; j++, k++){
+        const command = commands[k];
+        await runCommandWithDelay(command);
+      }
       if(tempHealty<=player.health)  setCommandColor(i,'bg-success');
       else {
         setCommandColor(i,'bg-danger');
@@ -403,13 +405,14 @@
   
   const player = new Player('TesteRobto');
   const commands = [];
+  const numCommands = [];
   
   //Defining the conttants
   const CELL_SIZE = 35;
   const MARGIN = 20;
   var N_COLUMNS =null;
   var N_ROWS = null;
-  const DELAY = 500;
+  const DELAY = 350;
 
   var generatedItems = null;
   var configItems = null;
@@ -648,23 +651,27 @@
       msgMultiple =` ${multiple} vezes`;
     }
     textCommand.innerHTML = textCommand.innerHTML +'<div class="row bg-white"><div class="col-12">'+ command+ msgMultiple+'</div></div>\n';
+    numCommands.push(multiple);
     multiple=1;
 
   }
 
   function removeCommand() {
-    /*se meu textarea tiver x significa que é um fator ai pego o fator 2x 3x ou 4x
-      e uso para remover o comand
-*/
-      
+    
     let linha = removeTextArea();
     let num = linha.replace(/.*([2-4]) vezes.*/g, "$1");
+    
+    if (num == '2x' || num == '3x' || num == '4x'){
 
-    num = !isNaN(num)? num : 1;
-    for(i=0;i<num; i++){
-      commands.pop();
+    }else{
+
+      num = !isNaN(num)? num : 1;
+      for(i=0;i<num; i++){
+        commands.pop();
+      }
+      
+      numCommands.pop();
     }
-
     multiple=1;
   }
 
