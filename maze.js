@@ -1,6 +1,6 @@
 // Player class 
   class Player {
-    constructor(name, energy = 100, health = 100, items = [], life = 1, x = 0, y = 0) {
+    constructor(name, energy = 100, health = 100, items = [], life = 2, x = 0, y = 0) {
       this.name = name;
       this.energy = energy;
       this.health = health;
@@ -145,12 +145,14 @@
     }
   
     isAlive(){
-      if (this.energy>0 && this.health>0 && this.life>-1){
+      if (this.energy>0 && this.health>0 && this.life>0){
         return true;
-      }else{
-        //this.itDied();
-        fail();
       }
+      /*else{
+        this.itDied();
+        this.setValues();
+        fail();
+      }*/
       return false;
     }
   
@@ -365,7 +367,7 @@
       const command = commands[i];
       setCommandColor(i,'bg-primary');
       await runCommandWithDelay(command);
-      if(tempHealty==player.health)  setCommandColor(i,'bg-success');
+      if(tempHealty<=player.health)  setCommandColor(i,'bg-success');
       else {
         setCommandColor(i,'bg-danger');
         tempHealty = player.health;
@@ -373,7 +375,9 @@
     }
   
     if (!player.isAlive()){
-      //player.itDied(); 
+      player.itDied();
+      player.setValues();
+      fail(); 
     }
   
     commands.splice(0, commands.length);
@@ -403,8 +407,8 @@
   //Defining the conttants
   const CELL_SIZE = 35;
   const MARGIN = 20;
-  const N_COLUMNS = (Math.floor(Math.random() * 5) + 13) | 1;
-  const N_ROWS = (Math.floor(Math.random() * 5) + 5) | 1;
+  var N_COLUMNS = (Math.floor(Math.random() * 5) + 13) | 1;
+  var N_ROWS = (Math.floor(Math.random() * 5) + 5) | 1;
   const DELAY = 500;
 
   var generatedItems = null;
@@ -631,6 +635,7 @@
     if (multiple>1) {
       removeTextArea();
       msgMultiple =` ${multiple} vezes`;
+      //alert("oks");
     }
     textCommand.innerHTML = textCommand.innerHTML +'<div class="row bg-white"><div class="col-12">'+ command+ msgMultiple+'</div></div>\n';
     multiple=1;
@@ -638,9 +643,20 @@
   }
 
   function removeCommand() {
-    removeTextArea();
+    /*se meu textarea tiver x significa que é um fator ai pego o fator 2x 3x ou 4x
+      e uso para remover o comand
+*/
+      
+    let linha = removeTextArea();
+    let num = linha.replace(/.*([2-4]) vezes.*/g, "$1");
+    //alert (num + " - " + isNaN(num));
 
-    commands.pop();
+    num = !isNaN(num)? num : 1;
+    for(i=0;i<num; i++){
+      commands.pop();
+    }
+
+    multiple=1;
   }
 
   function removeTextArea(){
@@ -649,10 +665,11 @@
     if (text.endsWith('\n')) {
       textCommand.innerHTML = text.slice(0, -1); // Remove o último caractere (a quebra de linha)
     }
-
+    
     const linhas = textCommand.innerHTML.split('\n');
-    linhas.pop();
-    textCommand.innerHTML = linhas.join('\n');  
+    let retorno = linhas.pop();
+    textCommand.innerHTML = linhas.join('\n')+'\n';  
+    return retorno;
 
   }
   
@@ -673,11 +690,18 @@
   function fail() {
   
     commands.splice(0, commands.length);
-  
-    if (player.life>=0){
-      player.setValues();
-      textCommand.innerHTML = "Você morreu, mas ainda tem vidas \n<br> Tente novamente\n<br>";
+    console.log(player.life);
+    //removeTextArea();
+
+    
+    if (player.life>0){
+      failMessage.innerHTML = "Você morreu, mas ainda tem vidas. \n<br> Aperte OK para tentar novamente!\n<br>"
+      failContentModal.classList.remove('bg-danger','text-white');
+      failContentModal.classList.add('bg-warning','text-dark');
     }else{
+      failContentModal.classList.remove('bg-warning','text-dark');
+      failContentModal.classList.add('bg-danger','text-white');
+      failMessage.innerHTML = "Você morreu, e não tem mais vidas \n<br> Aperte OK para voltar a página inicial!\n<br>"
       okToIndex.removeAttribute('hidden');  
       okToContinue.hidden = true;  
     }
@@ -686,8 +710,6 @@
   
   function failOk() {
     $('#failModal').modal('hide');
-    player.itDied();
-    player.setValues();
   }
   // --------------------------------------------------
   
@@ -695,6 +717,22 @@
   function convertPlayerToCSV(player) {
     return `${player.name},${player.energy},${player.health},${player.items.join(';')},${player.life},${player.x},${player.y},${player.direction}`;
   }
+
+  // Função para converter um CSV de itens em um array de objetos Item
+  function convertCSVToItems(csv) {
+    const itemData = csv.split('\n');
+    const items = [];
+
+    for (const itemCSV of itemData) {
+      const [type, x, y, isUsed] = itemCSV.split(',');
+      const newItem = new Item(type, parseInt(x), parseInt(y));
+      newItem.isUsed = isUsed === 'true'; // Converte a string 'true' em um valor booleano
+      items.push(newItem);
+    }
+
+    return items;
+  }
+
   
   // Função para converter um CSV em um objeto de jogador
   function convertCSVToPlayer(csv) {
@@ -703,17 +741,17 @@
   }
   
   // Função para converter o estado do jogo em CSV
-  function convertGameStateToCSV(player, maze, finishArea) {
+  function convertGameStateToCSV(player, maze, finishArea, items) { // Atualizado para incluir os itens
     const playerCSV = convertPlayerToCSV(player);
     const mazeCSV = maze.map(row => row.join(',')).join(';');
-    const finishAreaCSV = `${finishArea[0]},${finishArea[1]}`; // Convertendo a área verde para CSV
-    return `${playerCSV}\n${mazeCSV}\n${finishAreaCSV}`; // Incluindo a área verde no CSV
+    const finishAreaCSV = `${finishArea[0]},${finishArea[1]}`;
+    const itemsCSV = items.map(item => `${item.type},${item.x},${item.y},${item.isUsed}`).join(';'); // Itens em CSV
+    return `${playerCSV}\n${mazeCSV}\n${finishAreaCSV}\n${itemsCSV}`; // Inclua os itens no CSV
   }
   
+  
   function saveGame() {
-    const gameStateCSV = convertGameStateToCSV(player, maze, finishArea);
-    alert(finishArea);
-    // Cria um objeto Blob para o conteúdo CSV
+    const gameStateCSV = convertGameStateToCSV(player, maze, finishArea, generatedItems, N_COLUMNS, N_ROWS );
     const blob = new Blob([gameStateCSV], { type: 'text/csv' });
   
     // Cria um link de download
@@ -731,12 +769,16 @@
   // -------------------------------------------------
   // Função para converter um CSV em estado do jogo
   function convertCSVToGameState(csv) {
-    const [playerCSV, mazeCSV, finishAreaCSV] = csv.split('\n'); // Incluindo a área verde no CSV
+    const [playerCSV, mazeCSV, finishAreaCSV, itemsCSV, N_COLUMNS_CSV,N_ROWS_CSV] = csv.split('\n'); // Incluindo a área verde e os itens no CSV
     const loadedPlayer = convertCSVToPlayer(playerCSV);
     const loadedMaze = mazeCSV.split(';').map(row => row.split(',').map(cell => parseInt(cell)));
     const finishArea = finishAreaCSV.split(',').map(coord => parseInt(coord)); // Convertendo a área verde de volta para array
-    return { player: loadedPlayer, maze: loadedMaze, finishArea }; // Incluindo a área verde nos dados do jogo
+    const loadedItems = convertCSVToItems(itemsCSV); // Processando a seção de itens
+    N_COLUMNS = N_COLUMNS_CSV;
+    N_ROWS = N_ROWS_CSV;
+    return { player: loadedPlayer, maze: loadedMaze, finishArea, items: loadedItems }; // Incluindo a área verde e os itens nos dados do jogo
   }
+  
   
   function loadGameFromCSV(csv) {
     const loadedGameState = convertCSVToGameState(csv);
@@ -751,15 +793,16 @@
     player.direction = loadedGameState.player.direction;
   
     maze = loadedGameState.maze;
+    generatedItems = loadedGameState.items; 
   
-    finishArea = [loadedGameState.finishArea[0] , loadedGameState.finishArea[1]]; // Convertendo a área verde de volta para o formato do canvas
+    finishArea = [loadedGameState.finishArea[0], loadedGameState.finishArea[1]]; 
   
     player.setValues();
     player.draw(ctx);
     drawMaze(maze);
-    //drawPlayer();
-  
+    // Desenhe os itens no seu jogo, use a variável "items"
   }
+  
   
   // Função para carregar o jogo quando a página for carregada
   window.onload = function() {

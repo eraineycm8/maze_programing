@@ -84,7 +84,11 @@
         <div class="col-4 flex-column">
           <div class="d-flex flex-column vh-100">
             <header class="p-3 text-center">
-              <button class="btn btn-success mx-1" type="button" id="execute" onclick="run()">Executar</button>
+              <button class="btn btn-success mx-1" type="button" id="execute" onclick="run()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
+                  <path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393z"/>
+                </svg>
+                 Executar</button>
               <button class="btn btn-secondary mx-1" type="button" onclick="saveGame()">Salvar</button>
               <a href="index.html"><button class="btn btn-primary" type="button">Fechar</button></a>
             </header>
@@ -145,7 +149,7 @@
 <!-- Modal Fail -->
 <div class="modal fade" id="failModal" tabindex="-1" aria-labelledby="failLabel" aria-hidden="true">
   <div class="modal-dialog" role="document">
-    <div class="modal-content bg-danger">
+    <div class="modal-content bg-danger" id="failContentModal">
       <div class="modal-header">
         <h1 class="modal-title fs-5" id="failLabel">Tente novamente!</h1>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -158,7 +162,7 @@
       <div class="modal-footer">
         <button type="button" class="btn btn-light text-light" data-dismiss="modal" hidden>Close</button>
         <a href=".\index.html"><button id="okToIndex" type="button" class="btn btn-light text-danger" hidden>Ok</button></a>
-        <button id="TEST" type="button" class="btn btn-light text-danger" onclick="failOk()">Ok</button>
+        <button id="okToContinue" type="button" class="btn btn-light text-danger" onclick="failOk()">Ok</button>
       </div>
     </div>
   </div>
