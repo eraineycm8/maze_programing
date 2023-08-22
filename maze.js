@@ -1,6 +1,6 @@
 // Player class 
   class Player {
-    constructor(name, energy = 100, health = 100, items = [], life = 2, x = 0, y = 0) {
+    constructor(name, energy = 100, health = 100, items = 0, life = 2, x = 0, y = 0, direction = 'n') {
       this.name = name;
       this.energy = energy;
       this.health = health;
@@ -8,7 +8,7 @@
       this.life = life;
       this.x = x;
       this.y = y;
-      this.direction = 'n';
+      this.direction = direction;
     }
   
     setStartLocation(x,y){
@@ -21,7 +21,7 @@
     setValues(){
       document.getElementById("energy").value = this.energy;
       document.getElementById("health").value = this.health;
-      document.getElementById("items").value = this.items.length + "/" + getNumKeys();
+      document.getElementById("items").value = this.items + "/" + getNumKeys();
       document.getElementById("life").value = this.life;
     }
   
@@ -124,7 +124,7 @@
               this.health = this.health > 100? 100 : this.health;
               break;
           case 'key':
-              this.items.push(item);
+              this.items+=1;
               break;
           case 'energy':
             this.energy +=50;
@@ -407,16 +407,16 @@
   //Defining the conttants
   const CELL_SIZE = 35;
   const MARGIN = 20;
-  var N_COLUMNS = (Math.floor(Math.random() * 5) + 13) | 1;
-  var N_ROWS = (Math.floor(Math.random() * 5) + 5) | 1;
+  var N_COLUMNS =null;
+  var N_ROWS = null;
   const DELAY = 500;
 
   var generatedItems = null;
   var configItems = null;
   
   // Defining the dimensions of the canvas
-  const WIDTH = N_COLUMNS*CELL_SIZE +MARGIN;
-  const HEIGHT = N_ROWS*CELL_SIZE+MARGIN;
+  var WIDTH = 300;
+  var HEIGHT = 200;
   
   // Defining the colors
   const C_MARGIN = '#333333';
@@ -427,15 +427,13 @@
   const GRID_LINE = '#333333';
   
   // Defining the size of maze cells
-  const CELL_WIDTH = Math.floor(WIDTH / CELL_SIZE);
-  const CELL_HEIGHT = Math.floor(HEIGHT / CELL_SIZE);
+  var CELL_WIDTH = null;
+  var CELL_HEIGHT = null;
   
   
   // Creating the canvas element
   const posCanvas = document.getElementById('mazeCanvas');
   const canvas = document.createElement('canvas');
-  canvas.width = WIDTH;
-  canvas.height = HEIGHT;
   posCanvas.appendChild(canvas);
   canvas.classList.add('canvas');
 
@@ -446,22 +444,35 @@
   
   // Generate the maze and initialize player coordinates
   let maze = null;
-  const portals = [
-    [0, 0],
-    [(N_COLUMNS - 1) * CELL_SIZE, 0],
-    [(N_COLUMNS - 1) * CELL_SIZE, (N_ROWS - 1) * CELL_SIZE],
-    [0, (N_ROWS - 1) * CELL_SIZE]
-  ];
+  var portals = [];
   
   // Function to generate the starting position of the player
   var startArea = null; 
   var finishArea = null;
   var interval = null;
   var multiple = 1;
+
+  function generateLimits(cols,rows) {
+    N_COLUMNS = cols;
+    N_ROWS = rows;
+    WIDTH = N_COLUMNS*CELL_SIZE +MARGIN;
+    HEIGHT = N_ROWS*CELL_SIZE+MARGIN;
+    portals = [
+      [0, 0],
+      [(N_COLUMNS - 1) * CELL_SIZE, 0],
+      [(N_COLUMNS - 1) * CELL_SIZE, (N_ROWS - 1) * CELL_SIZE],
+      [0, (N_ROWS - 1) * CELL_SIZE]
+    ];
+    CELL_WIDTH = Math.floor(WIDTH / CELL_SIZE);
+    CELL_HEIGHT = Math.floor(HEIGHT / CELL_SIZE);
+
+    canvas.width = WIDTH;
+    canvas.height = HEIGHT;
+  
+  }
   
   // Function to generate the maze
   function generateMaze() {
-      
     const maze = Array.from({ length: CELL_HEIGHT }, () => Array(CELL_WIDTH).fill(1));
     
     const stack = [[0, 0]];
@@ -635,7 +646,6 @@
     if (multiple>1) {
       removeTextArea();
       msgMultiple =` ${multiple} vezes`;
-      //alert("oks");
     }
     textCommand.innerHTML = textCommand.innerHTML +'<div class="row bg-white"><div class="col-12">'+ command+ msgMultiple+'</div></div>\n';
     multiple=1;
@@ -649,7 +659,6 @@
       
     let linha = removeTextArea();
     let num = linha.replace(/.*([2-4]) vezes.*/g, "$1");
-    //alert (num + " - " + isNaN(num));
 
     num = !isNaN(num)? num : 1;
     for(i=0;i<num; i++){
@@ -682,7 +691,7 @@
     fx = finishArea[0] / CELL_SIZE;
     fy = finishArea[1] / CELL_SIZE;
   
-    if (fx == player.getColumn() && fy == player.getRow() && player.items.length == getNumKeys()){
+    if (fx == player.getColumn() && fy == player.getRow() && player.items == getNumKeys()){
       $('#success').modal('show');
     }
   }
@@ -715,12 +724,12 @@
   
   // Função para converter o estado do jogador em CSV
   function convertPlayerToCSV(player) {
-    return `${player.name},${player.energy},${player.health},${player.items.join(';')},${player.life},${player.x},${player.y},${player.direction}`;
+    return `${player.name},${player.energy},${player.health},${player.items},${player.life},${player.x},${player.y},${player.direction}`;
   }
 
   // Função para converter um CSV de itens em um array de objetos Item
   function convertCSVToItems(csv) {
-    const itemData = csv.split('\n');
+    const itemData = csv.split(';');
     const items = [];
 
     for (const itemCSV of itemData) {
@@ -737,16 +746,16 @@
   // Função para converter um CSV em um objeto de jogador
   function convertCSVToPlayer(csv) {
     const [name, energy, health, items, life, x, y, direction] = csv.split(',');
-    return new Player(name, parseInt(energy), parseInt(health), items.split(';'), parseInt(life), parseInt(x), parseInt(y), direction);
+    return new Player(name, parseInt(energy), parseInt(health), parseInt(items), parseInt(life), parseInt(x), parseInt(y), direction);
   }
   
   // Função para converter o estado do jogo em CSV
-  function convertGameStateToCSV(player, maze, finishArea, items) { // Atualizado para incluir os itens
+  function convertGameStateToCSV(player, maze, finishArea, items, n_cols, n_rows) { // Atualizado para incluir os itens
     const playerCSV = convertPlayerToCSV(player);
     const mazeCSV = maze.map(row => row.join(',')).join(';');
     const finishAreaCSV = `${finishArea[0]},${finishArea[1]}`;
     const itemsCSV = items.map(item => `${item.type},${item.x},${item.y},${item.isUsed}`).join(';'); // Itens em CSV
-    return `${playerCSV}\n${mazeCSV}\n${finishAreaCSV}\n${itemsCSV}`; // Inclua os itens no CSV
+    return `${playerCSV}\n${mazeCSV}\n${finishAreaCSV}\n${itemsCSV}\n${n_cols}\n${n_rows}`; // Inclua os itens no CSV
   }
   
   
@@ -769,14 +778,12 @@
   // -------------------------------------------------
   // Função para converter um CSV em estado do jogo
   function convertCSVToGameState(csv) {
-    const [playerCSV, mazeCSV, finishAreaCSV, itemsCSV, N_COLUMNS_CSV,N_ROWS_CSV] = csv.split('\n'); // Incluindo a área verde e os itens no CSV
+    const [playerCSV, mazeCSV, finishAreaCSV, itemsCSV, n_cols_csv,n_rows_csv] = csv.split('\n'); // Incluindo a área verde e os itens no CSV
     const loadedPlayer = convertCSVToPlayer(playerCSV);
     const loadedMaze = mazeCSV.split(';').map(row => row.split(',').map(cell => parseInt(cell)));
     const finishArea = finishAreaCSV.split(',').map(coord => parseInt(coord)); // Convertendo a área verde de volta para array
     const loadedItems = convertCSVToItems(itemsCSV); // Processando a seção de itens
-    N_COLUMNS = N_COLUMNS_CSV;
-    N_ROWS = N_ROWS_CSV;
-    return { player: loadedPlayer, maze: loadedMaze, finishArea, items: loadedItems }; // Incluindo a área verde e os itens nos dados do jogo
+    return { player: loadedPlayer, maze: loadedMaze, finishArea, items: loadedItems, n_cols:n_cols_csv, n_rows: n_rows_csv }; // Incluindo a área verde e os itens nos dados do jogo
   }
   
   
@@ -793,13 +800,15 @@
     player.direction = loadedGameState.player.direction;
   
     maze = loadedGameState.maze;
+    finishArea = [loadedGameState.finishArea[0], loadedGameState.finishArea[1]]; 
     generatedItems = loadedGameState.items; 
   
-    finishArea = [loadedGameState.finishArea[0], loadedGameState.finishArea[1]]; 
   
     player.setValues();
     player.draw(ctx);
+    generateLimits(loadedGameState.n_cols,loadedGameState.n_rows);
     drawMaze(maze);
+    
     // Desenhe os itens no seu jogo, use a variável "items"
   }
   
@@ -812,6 +821,7 @@
     if (csv) {
       loadGameFromCSV(decodeURIComponent(csv));
     }else{
+      generateLimits((Math.floor(Math.random() * 5) + 13) | 1,(Math.floor(Math.random() * 5) + 5) | 1);
       gameInitialize();
     }
     // Start the game loop
@@ -900,7 +910,7 @@ function generateItems() {
       const quantity = configItems[itemType];
 
       for (let i = 0; i < quantity; i++) {
-        // Gere um novo item e adicione-o ao array de itens.
+        
         const item = generateItem(itemType);
         items.push(item);
       }
