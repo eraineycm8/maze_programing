@@ -354,7 +354,12 @@
   
   async function runCommandWithDelay(method) {
     await sleep(DELAY);
-    await method();
+    try {
+      await method();
+    } catch (error) {
+      console.log(error);
+      console.log('\n\n'+method);
+    }
   }
   
   async function run() {
